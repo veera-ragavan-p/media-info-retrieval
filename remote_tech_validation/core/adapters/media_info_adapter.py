@@ -50,26 +50,18 @@ class MediaInfoAdapter:
         return media_info_profile
 
     def _get_media_info(self) -> dict:
-        try:
-            signed_url = self._aws_adapter.get_signed_url_for_asset()
-            self._logger.debug("LAUNCHING MEDIA INFO")
-            media_info_object = self._media_info.parse(
-                signed_url,
-                library_file="/opt/libmediainfo.so.0"
-            )
-            media_info = json.loads(media_info_object.to_json())
-            self._logger.info('MEDIA INFO')
-            self._logger.info(json.dumps(media_info))
-            self._check_is_file_corrupted(media_info)
-            return media_info
-        except FileNotFoundError as e:
-            raise e
-        except CorruptedFile as e:
-            raise e
-        except Exception as e:
-            self._logger.error(f"Error parsing media info: {str(e)}", exc_info=True)
-            raise MediaInfoError(str(e))
-
+        signed_url = self._aws_adapter.get_signed_url_for_asset()
+        self._logger.debug("LAUNCHING MEDIA INFO")
+        media_info_object = self._media_info.parse(
+            signed_url,
+            #library_file="/opt/libmediainfo.so.0"
+        )
+        media_info = json.loads(media_info_object.to_json())
+        self._logger.info('MEDIA INFO')
+        self._logger.info(json.dumps(media_info))
+        self._check_is_file_corrupted(media_info)
+        return media_info
+      
     def _check_is_file_corrupted(self, media_info: dict):
         for track in media_info["tracks"]:
             if track["track_type"] == "General" and track.get("istruncated") == "Yes":
